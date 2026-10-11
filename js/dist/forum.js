@@ -47,6 +47,8 @@
     var UserCard = cls('forum/components/UserCard');
     var UserControls = cls('forum/utils/UserControls');
     var Modal = cls('common/components/Modal');
+    var Notification = cls('forum/components/Notification');
+    var NotificationGrid = cls('forum/components/NotificationGrid');
     var Button = cls('common/components/Button');
     var Stream = cls('common/utils/Stream');
 
@@ -186,7 +188,11 @@
       } catch (x) {}
     }
 
-    function tipEl(d, color, nm) {
+    function isSelf(user) {
+      try { return !!(app.session && app.session.user && user && String(app.session.user.id()) === String(user.id())); } catch (e) { return false; }
+    }
+
+    function tipEl(d, color, nm, user) {
       var pct = progress(d);
       var nextName = d.next ? levelName(d.next) : '';
       return m('span.LevelTip', { role: 'tooltip', style: '--level-color:' + color }, [
@@ -206,7 +212,7 @@
         ]),
         m('span.LevelTip-foot', d.next
           ? t('forum.tip_remaining', { remaining: fmt(d.next.exp - d.exp), level: d.level + 1, name: nextName ? ' · ' + nextName : '' })
-          : t('forum.tip_max_desc'))
+          : (isSelf(user) ? t('forum.tip_max_desc') : t('forum.tip_max_desc_other', { name: user.displayName() })))
       ]);
     }
 
@@ -227,7 +233,7 @@
         m('span.LevelBadge' + (d.premium ? '.LevelBadge--premium' : ''), {
           style: 'background:' + gradient(color, d.premium) + ';color:' + textColor(color) + ';--level-glow:' + rgba(color, 0.6)
         }, [iconEl(d.cfg, 'LevelBadge-icon'), label]),
-        tipEl(d, color, nm)
+        tipEl(d, color, nm, user)
       ]);
     }
 
@@ -340,10 +346,47 @@
         });
       });
 
+      safe('thong-bao-len-cap', function () {
+        if (!Notification) return;
+
+        var LevelUpNotification = class extends Notification {
+          icon() { return 'fas fa-star'; }
+          href() {
+            try {
+              var u = this.attrs.notification.subject();
+              return u ? app.route.user(u) : '#';
+            } catch (e) { return '#'; }
+          }
+          content() {
+            var data = {};
+            try { data = this.attrs.notification.content() || {}; } catch (e) {}
+            var lv = parseInt(data.level, 10) || 1;
+            var L = levels();
+            var cfg = L[Math.min(lv, L.length) - 1];
+            var nm = cfg ? levelName(cfg) : '';
+            return t('forum.notif_levelup', { level: lv, name: nm ? ' · ' + nm : '' });
+          }
+          excerpt() { return null; }
+        };
+
+        app.notificationComponents = app.notificationComponents || {};
+        app.notificationComponents.kumaDevelopLevelUp = LevelUpNotification;
+
+        if (NotificationGrid) {
+          extend(NotificationGrid.prototype, 'notificationTypes', function (items) {
+            items.add('kumaDevelopLevelUp', {
+              name: 'kumaDevelopLevelUp',
+              icon: 'fas fa-star',
+              label: t('forum.notif_setting')
+            });
+          });
+        }
+      });
+
       safe('nut-chinh-cap-admin', function () {
         extend(UserControls, 'moderationControls', function (items, user) {
           try {
-            if (!app.forum.attribute('adminUrl')) return;
+            if (!app.forum.attribute('kumaDevelopLevelCanEdit') && !app.forum.attribute('adminUrl')) return;
             items.add('kuma-develop-level', Button.component({
               icon: 'fas fa-star',
               onclick: function () {

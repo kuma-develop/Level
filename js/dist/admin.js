@@ -101,6 +101,14 @@
         ]);
       }, 90)
       .registerSetting(function () {
+        var s = this.setting('kuma-develop-level.notify_levelup', '1');
+        var on = s() === '1' || s() === 1 || s() === true;
+        return m('.Form-group', [
+          Switch.component({ state: on, onchange: function (v) { s(v ? '1' : '0'); } }, t('admin.notify_levelup')),
+          m('p.helpText', t('admin.notify_levelup_help'))
+        ]);
+      }, 85)
+      .registerSetting(function () {
         var stream = this.setting('kuma-develop-level.levels');
         var list = parse(stream());
 
@@ -178,7 +186,12 @@
             }, t('admin.reset'))
           ])
         ]);
-      }, 80);
+      }, 80)
+      .registerPermission({
+        icon: 'fas fa-star',
+        label: t('admin.perm_edit'),
+        permission: 'kumaDevelopLevel.edit'
+      }, 'moderate', 80);
   });
   }
 })();

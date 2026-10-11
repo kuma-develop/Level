@@ -3,7 +3,9 @@
 namespace KumaDevelop\Level;
 
 use Carbon\Carbon;
+use Flarum\Notification\NotificationSyncer;
 use Flarum\Settings\SettingsRepositoryInterface;
+use KumaDevelop\Level\Notification\LevelUpBlueprint;
 use Flarum\User\User;
 
 class LevelService
@@ -165,10 +167,14 @@ class LevelService
 
         // Cộng EXP không bao giờ được chặn việc đăng bài: lỗi chỉ được ghi vào log.
         try {
+            $oldExp = (int) User::query()->whereKey($user->id)->value('exp');
+
             User::query()->whereKey($user->id)->increment('exp', $amount);
 
             $user->exp = (int) User::query()->whereKey($user->id)->value('exp');
             $user->syncOriginalAttribute('exp');
+
+            $this->notifyLevelUp($user, $oldExp, (int) $user->exp);
 
             return true;
         } catch (\Throwable $e) {
@@ -180,6 +186,31 @@ class LevelService
             }
 
             return false;
+        }
+    }
+
+    /** Gửi thông báo khi cấp tăng (nhảy nhiều cấp một lúc thì chỉ báo cấp mới nhất). Lỗi không ảnh hưởng việc cộng EXP. */
+    protected function notifyLevelUp(User $user, int $oldExp, int $newExp): void
+    {
+        try {
+            if (! (bool) $this->settings->get('kuma-develop-level.notify_levelup', true)) {
+                return;
+            }
+
+            $newLevel = $this->levelFor($newExp);
+
+            if ($newLevel <= $this->levelFor($oldExp)) {
+                return;
+            }
+
+            resolve(NotificationSyncer::class)->sync(new LevelUpBlueprint($user, $newLevel), [$user]);
+        } catch (\Throwable $e) {
+            try {
+                resolve(\Psr\Log\LoggerInterface::class)->error(
+                    '[kuma-develop-level] Không gửi được thông báo lên cấp: ' . $e->getMessage()
+                );
+            } catch (\Throwable $ignored) {
+            }
         }
     }
 }

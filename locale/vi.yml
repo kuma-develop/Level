@@ -22,6 +22,9 @@ kuma-develop-level:
     new_level: "Cấp mới"
     reset: "Khôi phục mặc định"
     reset_confirm: "Khôi phục bảng cấp độ mặc định?"
+    perm_edit: "Chỉnh EXP và cấp độ của người dùng"
+    notify_levelup: "Gửi thông báo khi người dùng lên cấp"
+    notify_levelup_help: "Người dùng có thể tự tắt trong Cài đặt > Thông báo."
   forum:
     exp_progress: "EXP {exp} / {next}"
     exp_max: "EXP {exp}"
@@ -35,6 +38,9 @@ kuma-develop-level:
     tip_remaining: "Còn {remaining} EXP để lên Lv.{level}{name}"
     tip_max: "TỐI ĐA"
     tip_max_desc: "Bạn đã đạt cấp cao nhất"
+    tip_max_desc_other: "{name} đã đạt cấp cao nhất"
+    notif_levelup: "Chúc mừng! Bạn đã lên Cấp {level}{name}"
+    notif_setting: "Khi tôi lên cấp"
     modal_save: "Lưu"
   lib:
     level_short: "Lv.{level}"

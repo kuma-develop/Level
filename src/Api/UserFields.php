@@ -15,7 +15,7 @@ class UserFields
             // Chỉ quản trị viên được ghi (chỉnh EXP/cấp của người dùng)
             Schema\Integer::make('exp')
                 ->get(fn (User $user) => (int) $user->exp)
-                ->writable(fn ($user, Context $context) => $context->getActor()->isAdmin())
+                ->writable(fn ($user, Context $context) => $context->getActor()->can('kumaDevelopLevel.edit'))
                 ->set(function (User $user, $value) {
                     $user->exp = max(0, (int) $value);
                 }),
