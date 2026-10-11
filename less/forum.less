@@ -1,0 +1,198 @@
+.LevelBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  white-space: nowrap;
+  vertical-align: middle;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), 0 1px 2px rgba(0, 0, 0, .18);
+  &-icon { margin-right: 4px; }
+
+  // Cấp nổi bật (cấp cao nhất hoặc cấp được bật hiệu ứng): ánh kim + vệt sáng + viền phát sáng
+  &--premium {
+    padding: 2px 12px;
+    font-weight: 800;
+    letter-spacing: .3px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, .55),
+      0 0 10px var(--level-glow, rgba(245, 158, 11, .6)),
+      0 2px 6px rgba(0, 0, 0, .25);
+    animation: LevelBadge-glow 2.4s ease-in-out infinite;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -60%;
+      width: 40%;
+      background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .7), transparent);
+      transform: skewX(-20deg);
+      animation: LevelBadge-shine 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .LevelBadge-icon {
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
+      animation: LevelBadge-float 2.4s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes LevelBadge-shine {
+  0% { left: -60%; }
+  55%, 100% { left: 130%; }
+}
+@keyframes LevelBadge-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.12); }
+}
+@keyframes LevelBadge-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-1px) rotate(-8deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .LevelBadge--premium,
+  .LevelBadge--premium::after,
+  .LevelBadge--premium .LevelBadge-icon { animation: none; }
+}
+
+.LevelInfo {
+  display: block;
+  min-width: 140px;
+  &-label { font-size: 12px; font-weight: 600; }
+  &-bar {
+    height: 7px;
+    margin-top: 4px;
+    border-radius: 4px;
+    background: rgba(128, 128, 128, .25);
+    overflow: hidden;
+  }
+  &-fill { height: 100%; border-radius: 4px; }
+}
+
+// ---- Thẻ thông tin khi rê chuột / chạm vào huy hiệu ----
+.LevelBadgeWrap {
+  position: relative;
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: middle;
+  outline: none;
+  cursor: default;
+
+  &:hover .LevelTip,
+  &:focus .LevelTip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.LevelTip {
+  position: fixed;
+  z-index: 1001;
+  display: block;
+  width: 224px;
+  box-sizing: border-box;
+  padding: 14px 14px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(128, 128, 128, .28);
+  background: var(--body-bg, #fff);
+  color: var(--text-color, #1f2937);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .25);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .15s ease, transform .15s ease, visibility .15s;
+
+  // vạch màu trên cùng
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+    background: var(--level-color, #f59e0b);
+  }
+  // mũi tên chỉ vào huy hiệu
+  &::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: var(--arrow-x, 20px);
+    width: 10px;
+    height: 10px;
+    transform: rotate(45deg);
+    background: var(--body-bg, #fff);
+    border-left: 1px solid rgba(128, 128, 128, .28);
+    border-top: 1px solid rgba(128, 128, 128, .28);
+  }
+  &--up {
+    transform: translateY(4px);
+    &::after {
+      top: auto;
+      bottom: -6px;
+      transform: rotate(225deg);
+    }
+  }
+
+  &-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  &-medal {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 15px;
+    font-weight: 800;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5), 0 2px 6px rgba(0, 0, 0, .25);
+  }
+  &-title { display: flex; flex-direction: column; min-width: 0; }
+  &-name { font-size: 14px; font-weight: 800; }
+  &-sub { color: var(--muted-color, #6b7280); font-size: 11px; }
+
+  &-bar {
+    display: block;
+    height: 7px;
+    border-radius: 4px;
+    background: rgba(128, 128, 128, .25);
+    overflow: hidden;
+  }
+  &-fill { display: block; height: 100%; border-radius: 4px; }
+  &-nums {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  &-foot {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(128, 128, 128, .2);
+    color: var(--muted-color, #6b7280);
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .LevelTip { transition: none; }
+}
